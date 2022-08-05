@@ -16,7 +16,7 @@ find_package(Qt6 COMPONENTS
         OpenGLWidgets
         REQUIRED)
 
-add_executable(SquidAirlinesTheGame main.cpp MainWindow.cpp MainWindow.h)
+add_executable(SquidAirlinesTheGame resources.qrc main.cpp MainWindow.cpp MainWindow.h menus/AbstractMenu.cpp menus/AbstractMenu.h menus/MainMenu.cpp menus/MainMenu.h)
 target_link_libraries(SquidAirlinesTheGame
         Qt::Core
         Qt::Gui

@@ -10,6 +10,10 @@
 struct MainWindowPrivate;
 class MainWindow : public QOpenGLWidget {
     Q_OBJECT
+protected:
+    void paintEvent(QPaintEvent *e) override;
+    void keyPressEvent(QKeyEvent *event) override;
+
 public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
