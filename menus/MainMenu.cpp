@@ -22,5 +22,8 @@ MainMenu::~MainMenu() {
 
 void MainMenu::drawMenu(QPainter *painter, QSize size) {
     auto rect = this->middleRect(size);
+
+
+
     painter->drawText(rect.left(), rect.top(), "Menu goes here");
 }
