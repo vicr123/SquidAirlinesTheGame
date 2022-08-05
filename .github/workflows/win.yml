@@ -43,3 +43,10 @@ jobs:
         with:
           name: "squid-airlines-the-game-win"
           path: ${{ steps.deploy.outputs.package }}
+      - uses: manleydev/butler-publish-itchio-action@master
+        env:
+          BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDS }}
+          CHANNEL: windows
+          ITCH_GAME: squid-airlines-the-game
+          ITCH_USER: vicr123
+          PACKAGE: ${{ steps.deploy.outputs.package }}
