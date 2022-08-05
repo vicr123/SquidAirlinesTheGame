@@ -27,6 +27,11 @@ jobs:
         with:
           sdk: 10.0.22000.0
       - uses: vicr123/libcontemporary/install-libcontemporary@actions
+      - uses: vicr123/libcontemporary/build-project@actions
+        name: "Build contemporary-theme"
+        with:
+          project: "vicr123/contemporary-theme"
+          commitish: "blueprint"
       - uses: actions/checkout@v1
         with:
           submodules: 'recursive'
