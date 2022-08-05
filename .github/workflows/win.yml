@@ -54,6 +54,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
+    needs: [build]
     steps:
       - uses: actions/download-artifact@v3
         id: download
