@@ -11,11 +11,13 @@ class QPainter;
 class QSize;
 class AbstractMenu : public QObject {
     Q_OBJECT
+
 public:
     explicit AbstractMenu(QObject *parent = nullptr);
 
-    virtual void drawMenu(QPainter* painter, QSize size) = 0;
+    QRect middleRect(QSize size);
 
+    virtual void drawMenu(QPainter* painter, QSize size) = 0;
 };
 
 

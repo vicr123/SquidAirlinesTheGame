@@ -3,6 +3,7 @@
 //
 
 #include "MainMenu.h"
+#include "AbstractMenu.h"
 
 #include <QPainter>
 #include <QSize>
@@ -20,5 +21,6 @@ MainMenu::~MainMenu() {
 }
 
 void MainMenu::drawMenu(QPainter *painter, QSize size) {
-    painter->drawText(0, 100, "Menu goes here");
+    auto rect = this->middleRect(size);
+    painter->drawText(rect.left(), rect.top(), "Menu goes here");
 }

@@ -12,6 +12,7 @@ class MainMenu : public AbstractMenu {
 public:
     explicit MainMenu(QObject* parent = nullptr);
     ~MainMenu();
+
     void drawMenu(QPainter *painter, QSize size) override;
 
 private:

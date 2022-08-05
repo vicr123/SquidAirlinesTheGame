@@ -7,15 +7,18 @@
 #include <QPainter>
 
 struct MainWindowPrivate {
-    AbstractMenu* activeMenu;
+    QList<AbstractMenu*> menusToDraw;
+
+    MainMenu* mainMenu;
 };
 
 MainWindow::MainWindow(QWidget *parent) : QOpenGLWidget(parent) {
     d = new MainWindowPrivate();
-    this->resize(800, 600);
-    this->setMinimumSize(800, 600);
+    this->resize(1024, 768);
+    this->setMinimumSize(1024, 768);
 
-    d->activeMenu = new MainMenu(this);
+    d->mainMenu = new MainMenu(this);
+    d->menusToDraw.append(d->mainMenu);
 }
 
 MainWindow::~MainWindow() {
@@ -32,8 +35,8 @@ void MainWindow::paintEvent(QPaintEvent *e) {
     QPainter painter(this);
     painter.fillRect(QRect(0, 0, this->width(), this->height()), sky);
 
-    if (d->activeMenu) {
-        d->activeMenu->drawMenu(&painter, QSize(this->width(), this->height()));
+    for (auto menu : d->menusToDraw) {
+        menu->drawMenu(&painter, QSize(this->width(), this->height()));
     }
 }
 
