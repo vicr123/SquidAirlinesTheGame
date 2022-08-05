@@ -8,6 +8,7 @@
 #include <QObject>
 
 class NavigationElement;
+class QPainter;
 struct NavigationManagerPrivate;
 class NavigationManager : public QObject {
     Q_OBJECT
@@ -16,6 +17,16 @@ public:
     ~NavigationManager();
 
     void addNavigationElement(NavigationElement* element);
+
+    void paint(QPainter *painter, QRect rect);
+
+    void moveToNext();
+    void moveToPrev();
+    void activate();
+
+signals:
+    void requestPaint();
+
 private:
     NavigationManagerPrivate* d;
 };

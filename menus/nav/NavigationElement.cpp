@@ -7,3 +7,5 @@
 NavigationElement::NavigationElement(QObject *parent) : QObject(parent) {
 
 }
+void NavigationElement::activate() {
+}

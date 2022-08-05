@@ -18,6 +18,14 @@ public:
     QRect middleRect(QSize size);
 
     virtual void drawMenu(QPainter* painter, QSize size) = 0;
+
+    virtual void moveToNext();
+    virtual void moveToPrev();
+    virtual void activate();
+
+signals:
+    void requestPaint();
+
 };
 
 

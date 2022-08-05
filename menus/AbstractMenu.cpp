@@ -16,3 +16,9 @@ QRect AbstractMenu::middleRect(QSize size) {
     mid.moveCenter(geom.center());
     return mid;
 }
+void AbstractMenu::moveToPrev() {
+}
+void AbstractMenu::moveToNext() {
+}
+void AbstractMenu::activate() {
+}

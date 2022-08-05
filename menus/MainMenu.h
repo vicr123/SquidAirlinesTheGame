@@ -9,11 +9,21 @@
 
 struct MainMenuPrivate;
 class MainMenu : public AbstractMenu {
+        Q_OBJECT
 public:
     explicit MainMenu(QObject* parent = nullptr);
     ~MainMenu();
 
     void drawMenu(QPainter *painter, QSize size) override;
+
+    void moveToNext() override;
+    void moveToPrev() override;
+    void activate() override;
+
+    void showAgain();
+
+    signals:
+        void startGame();
 
 private:
     MainMenuPrivate* d;
