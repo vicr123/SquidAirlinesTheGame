@@ -20,12 +20,16 @@ class GameSession : public QObject {
         void begin();
         void drawScreen(QPainter* painter, QSize size);
 
+        QPointF toGameCoordinates(QPointF windowCoordinates);
+
         void keyPressEvent(QKeyEvent* event);
         void mouseMoveEvent(QMouseEvent* event);
 
-        signals:
-            void gameSessionEnded();
-            void requestPaint();
+        void genObjects();
+
+    signals:
+        void gameSessionEnded();
+        void requestPaint();
 
     private:
         GameSessionPrivate* d;

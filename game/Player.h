@@ -7,6 +7,7 @@
 
 #include <QObject>
 
+class QPainterPath;
 class QPainter;
 struct PlayerPrivate;
 class Player : public QObject {
@@ -16,14 +17,21 @@ class Player : public QObject {
         ~Player() override;
 
         void draw(QPainter* painter);
+        QPolygonF poly();
 
         double angle();
+
+        void tick(double xDistance);
 
         void setTarget(int y);
         void moveTarget(int y);
 
+        void setDrawDead(bool drawDead);
+
     private:
         PlayerPrivate* d;
+
+        QPainterPath planePath();
 };
 
 #endif // SQUIDAIRLINESTHEGAME_PLAYER_H

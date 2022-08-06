@@ -4,21 +4,38 @@
 
 #include "GameSession.h"
 #include "Player.h"
+#include "objects/buildingobject.h"
 #include <QSize>
 #include <QRect>
 #include <QTimer>
 #include <QPainter>
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QRandomGenerator64>
+
+Q_DECLARE_METATYPE(QRandomGenerator64)
 
 struct GameSessionPrivate {
+    QRandomGenerator64 random;
     QTimer* gameTimer;
     QTimer* speedTimer;
 
     Player* player;
 
+    QTransform lastTransform;
+
+    QList<GameObjectPtr> gameObjects;
+
     qreal x = 0;
     qreal speed = 1;
+
+    qreal nextGen = -1;
+
+    static QList<QMetaObject> gameObjectTypes;
+};
+
+QList<QMetaObject> GameSessionPrivate::gameObjectTypes = {
+    BuildingObject::staticMetaObject
 };
 
 GameSession::GameSession(QObject* parent) : QObject(parent) {
@@ -54,15 +71,24 @@ void GameSession::drawScreen(QPainter* painter, QSize size) {
     painter->save();
     painter->setWindow(QRect(0, 0, 400, 300));
     painter->setViewport(playArea);
-    for (int i = 0; i < 400; i++) {
-        painter->drawLine(i, 0, i, static_cast<int>(i + d->x) % 400);
+
+    d->lastTransform = painter->combinedTransform();
+
+//    for (int i = 0; i < 400; i++) {
+//        painter->drawLine(i, 0, i, static_cast<int>(i + d->x) % 400);
+//    }
+
+    for (auto gameObject : d->gameObjects) {
+        gameObject->draw(painter, d->x);
     }
 
     d->player->draw(painter);
 
     painter->restore();
+}
 
-//    painter->fillRect(playArea, Qt::yellow);
+QPointF GameSession::toGameCoordinates(QPointF windowCoordinates) {
+    return d->lastTransform.inverted().map(windowCoordinates);
 }
 
 void GameSession::keyPressEvent(QKeyEvent* event) {
@@ -77,10 +103,39 @@ void GameSession::keyPressEvent(QKeyEvent* event) {
 }
 
 void GameSession::mouseMoveEvent(QMouseEvent* event) {
-    d->player->setTarget(event->pos().y());
+    d->player->setTarget(this->toGameCoordinates(event->pos()).y());
+}
+
+void GameSession::genObjects() {
+    if (d->nextGen < 0) return;
+    if (d->nextGen > d->x) return;
+
+    const double genLength = 500;
+
+    //Generate some objects
+    int objects = d->random.bounded(20);
+    for (auto i = 0; i < objects; i++) {
+        auto x = d->random.bounded(genLength);
+        x += d->x + genLength;
+
+        auto typeIndex = d->random.bounded(d->gameObjectTypes.length());
+        auto type = d->gameObjectTypes.at(typeIndex);
+        auto inst = qobject_cast<GameObject*>(type.newInstance(Q_ARG(double, x), Q_ARG(QRandomGenerator64*, &d->random)));
+
+        connect(inst, &GameObject::triggerGameOver, this, [this] {
+            d->player->setDrawDead(true);
+        });
+
+        auto gameObj = GameObjectPtr(inst);
+        d->gameObjects.append(gameObj);
+    }
+    d->nextGen += genLength;
 }
 
 void GameSession::begin() {
+    d->nextGen = d->x;
+    this->genObjects();
+
     //QTimer::singleShot(3000, this, [this] {
     //    emit gameSessionEnded();
     //});
@@ -88,5 +143,14 @@ void GameSession::begin() {
 
 void GameSession::tick() {
     d->x += d->speed;
+    d->player->tick(d->speed);
+
+    d->player->setDrawDead(false);
+    auto playerPosition = d->player->poly();
+    for (auto gameObject : d->gameObjects) {
+        gameObject->tick(playerPosition, d->x);
+    }
+
+    this->genObjects();
     emit requestPaint();
 }

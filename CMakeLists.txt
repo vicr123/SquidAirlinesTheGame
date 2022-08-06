@@ -24,7 +24,10 @@ add_executable(SquidAirlinesTheGame WIN32
         menus/nav/NavigationElement.cpp menus/nav/NavigationElement.h
         menus/nav/NavigationButton.h menus/nav/NavigationButton.cpp
         game/GameSession.cpp game/GameSession.h
-        game/Player.cpp game/Player.h)
+        game/Player.cpp game/Player.h
+        game/objects/gameobject.h game/objects/gameobject.cpp
+        game/objects/buildingobject.h game/objects/buildingobject.cpp
+    )
 
 target_link_libraries(SquidAirlinesTheGame
         Qt::Core
