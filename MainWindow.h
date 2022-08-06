@@ -13,6 +13,7 @@ class MainWindow : public QOpenGLWidget {
 protected:
     void paintEvent(QPaintEvent *e) override;
     void keyPressEvent(QKeyEvent *event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
@@ -20,6 +21,8 @@ public:
 
 private:
     MainWindowPrivate* d;
+
+    void prepareNewGameSession();
 };
 
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.22)
 project(SquidAirlinesTheGame)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -23,7 +23,8 @@ add_executable(SquidAirlinesTheGame WIN32
         menus/nav/NavigationManager.cpp menus/nav/NavigationManager.h
         menus/nav/NavigationElement.cpp menus/nav/NavigationElement.h
         menus/nav/NavigationButton.h menus/nav/NavigationButton.cpp
-        )
+        game/GameSession.cpp game/GameSession.h
+        game/Player.cpp game/Player.h)
 
 target_link_libraries(SquidAirlinesTheGame
         Qt::Core
@@ -32,6 +33,13 @@ target_link_libraries(SquidAirlinesTheGame
         Qt::OpenGL
         Qt::OpenGLWidgets
         )
+
+if (EDIT_AND_CONTINUE)
+    if(MSVC)
+      target_compile_options(SquidAirlinesTheGame PUBLIC "/ZI")
+      target_link_options(SquidAirlinesTheGame PUBLIC "/INCREMENTAL")
+    endif()
+endif()
 
 if(NOT DEFINED ENV{CI})
     if (NOT NO_COPY)
