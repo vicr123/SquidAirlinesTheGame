@@ -14,7 +14,7 @@ find_package(Qt6 COMPONENTS
         OpenGLWidgets
         REQUIRED)
 
-add_executable(SquidAirlinesTheGame WIN32
+add_executable(SquidAirlinesTheGame WIN32 MACOSX_BUNDLE
         resources.qrc
         main.cpp
         MainWindow.cpp MainWindow.h
@@ -27,6 +27,9 @@ add_executable(SquidAirlinesTheGame WIN32
         game/Player.cpp game/Player.h
         game/objects/gameobject.h game/objects/gameobject.cpp
         game/objects/buildingobject.h game/objects/buildingobject.cpp
+        game/objects/fuelobject.h game/objects/fuelobject.cpp
+
+        Info.plist.in
     )
 
 target_link_libraries(SquidAirlinesTheGame
@@ -36,6 +39,10 @@ target_link_libraries(SquidAirlinesTheGame
         Qt::OpenGL
         Qt::OpenGLWidgets
         )
+
+set_target_properties(SquidAirlinesTheGame PROPERTIES
+    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Info.plist.in
+)
 
 if (EDIT_AND_CONTINUE)
     if(MSVC)

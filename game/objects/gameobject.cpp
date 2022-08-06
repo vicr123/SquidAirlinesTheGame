@@ -1,19 +1,23 @@
 #include "gameobject.h"
 
 struct GameObjectPrivate {
-    double x;
-    double y;
-    QRandomGenerator64* random;
+        double x;
+        double y;
+        QRandomGenerator64* random;
 };
 
-GameObject::GameObject(double x, QRandomGenerator64* random, QObject* parent)
-    : QObject{parent} {
+GameObject::GameObject(double x, QRandomGenerator64* random, QObject* parent) :
+    QObject{parent} {
     d = new GameObjectPrivate();
     d->x = x;
     d->random = random;
 }
 GameObject::~GameObject() {
     delete d;
+}
+
+QList<QSharedPointer<GameObject>> GameObject::supplementaryObjects() {
+    return {};
 }
 
 double GameObject::x() {

@@ -27,6 +27,8 @@ class GameSession : public QObject {
 
         void genObjects();
 
+        void triggerGameOver();
+
     signals:
         void gameSessionEnded();
         void requestPaint();

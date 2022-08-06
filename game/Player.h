@@ -16,10 +16,15 @@ class Player : public QObject {
         explicit Player(QObject* parent = nullptr);
         ~Player() override;
 
+        void begin();
+
         void draw(QPainter* painter);
         QPolygonF poly();
 
         double angle();
+
+        double fuel();
+        void addFuel(double fuel);
 
         void tick(double xDistance);
 

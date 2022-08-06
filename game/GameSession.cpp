@@ -5,40 +5,44 @@
 #include "GameSession.h"
 #include "Player.h"
 #include "objects/buildingobject.h"
-#include <QSize>
-#include <QRect>
-#include <QTimer>
-#include <QPainter>
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QPainter>
 #include <QRandomGenerator64>
+#include <QRect>
+#include <QSize>
+#include <QTimer>
+#include <QVariantAnimation>
 
 Q_DECLARE_METATYPE(QRandomGenerator64)
 
 struct GameSessionPrivate {
-    QRandomGenerator64 random;
-    QTimer* gameTimer;
-    QTimer* speedTimer;
+        QRandomGenerator64 random;
+        QTimer* gameTimer;
+        QTimer* speedTimer;
 
-    Player* player;
+        Player* player;
 
-    QTransform lastTransform;
+        QTransform lastTransform;
 
-    QList<GameObjectPtr> gameObjects;
+        QList<GameObjectPtr> gameObjects;
 
-    qreal x = 0;
-    qreal speed = 1;
+        qreal x = 0;
+        qreal speed = 1;
 
-    qreal nextGen = -1;
+        qreal nextGen = -1;
 
-    static QList<QMetaObject> gameObjectTypes;
+        qreal hudOpacity = 0;
+        bool gameStarted = false;
+
+        static QList<QMetaObject> gameObjectTypes;
 };
 
 QList<QMetaObject> GameSessionPrivate::gameObjectTypes = {
-    BuildingObject::staticMetaObject
-};
+    BuildingObject::staticMetaObject};
 
-GameSession::GameSession(QObject* parent) : QObject(parent) {
+GameSession::GameSession(QObject* parent) :
+    QObject(parent) {
     d = new GameSessionPrivate();
 
     d->player = new Player(this);
@@ -74,15 +78,33 @@ void GameSession::drawScreen(QPainter* painter, QSize size) {
 
     d->lastTransform = painter->combinedTransform();
 
-//    for (int i = 0; i < 400; i++) {
-//        painter->drawLine(i, 0, i, static_cast<int>(i + d->x) % 400);
-//    }
+    //    for (int i = 0; i < 400; i++) {
+    //        painter->drawLine(i, 0, i, static_cast<int>(i + d->x) % 400);
+    //    }
 
     for (auto gameObject : d->gameObjects) {
         gameObject->draw(painter, d->x);
     }
 
     d->player->draw(painter);
+
+    painter->restore();
+
+    painter->save();
+    painter->setOpacity(d->hudOpacity);
+
+    // Draw the HUD
+    QRectF fuelRect;
+    fuelRect.setWidth(300);
+    fuelRect.setHeight(50);
+    fuelRect.moveTopLeft(playArea.topLeft() + QPoint(50, 50));
+
+    QRectF filledFuelRect = fuelRect;
+    filledFuelRect.setWidth(fuelRect.width() * d->player->fuel());
+    painter->fillRect(filledFuelRect, Qt::red);
+    painter->setPen(Qt::black);
+    painter->setBrush(Qt::transparent);
+    painter->drawRect(fuelRect);
 
     painter->restore();
 }
@@ -112,7 +134,17 @@ void GameSession::genObjects() {
 
     const double genLength = 500;
 
-    //Generate some objects
+    std::function<void(QList<GameObjectPtr>)> pushObject = [this, &pushObject](QList<GameObjectPtr> objects) {
+        for (auto obj : objects) {
+            connect(obj.data(), &GameObject::triggerGameOver, this, &GameSession::triggerGameOver);
+            connect(obj.data(), &GameObject::refuel, d->player, &Player::addFuel);
+
+            d->gameObjects.append(obj);
+            pushObject(obj->supplementaryObjects());
+        }
+    };
+
+    // Generate some objects
     int objects = d->random.bounded(20);
     for (auto i = 0; i < objects; i++) {
         auto x = d->random.bounded(genLength);
@@ -120,25 +152,38 @@ void GameSession::genObjects() {
 
         auto typeIndex = d->random.bounded(d->gameObjectTypes.length());
         auto type = d->gameObjectTypes.at(typeIndex);
-        auto inst = qobject_cast<GameObject*>(type.newInstance(Q_ARG(double, x), Q_ARG(QRandomGenerator64*, &d->random)));
-
-        connect(inst, &GameObject::triggerGameOver, this, [this] {
-            d->player->setDrawDead(true);
-        });
-
-        auto gameObj = GameObjectPtr(inst);
-        d->gameObjects.append(gameObj);
+        auto *inst = qobject_cast<GameObject*>(type.newInstance(Q_ARG(double, x), Q_ARG(QRandomGenerator64*, &d->random)));
+        pushObject({GameObjectPtr(inst)});
     }
     d->nextGen += genLength;
 }
 
+void GameSession::triggerGameOver() {
+    //    d->gameTimer->stop();
+    //    QTimer::singleShot(3000, this, [this] {
+    //        emit gameSessionEnded();
+    //    });
+    d->player->setDrawDead(true);
+}
+
 void GameSession::begin() {
+    d->gameStarted = true;
+    d->player->begin();
+
     d->nextGen = d->x;
     this->genObjects();
 
-    //QTimer::singleShot(3000, this, [this] {
-    //    emit gameSessionEnded();
-    //});
+    auto* anim = new QVariantAnimation(this);
+    anim->setStartValue(0.0);
+    anim->setEndValue(1.0);
+    anim->setDuration(250);
+    anim->setEasingCurve(QEasingCurve::OutCubic);
+    connect(anim, &QVariantAnimation::valueChanged, this, [this](QVariant value) {
+        d->hudOpacity = value.toReal();
+        emit requestPaint();
+    });
+    connect(anim, &QVariantAnimation::finished, anim, &QVariantAnimation::deleteLater);
+    anim->start();
 }
 
 void GameSession::tick() {

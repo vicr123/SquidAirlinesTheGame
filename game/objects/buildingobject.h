@@ -18,6 +18,7 @@ class BuildingObject : public GameObject {
     public:
         void draw(QPainter* painter, double xOffset);
         void tick(QPolygonF playerPosition, double xOffset);
+        QList<QSharedPointer<GameObject>> supplementaryObjects();
 };
 
 #endif // BUILDINGOBJECT_H

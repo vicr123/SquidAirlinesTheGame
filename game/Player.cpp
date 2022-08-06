@@ -9,11 +9,13 @@
 #include <QRect>
 
 struct PlayerPrivate {
-    double y = 200;
+        double y = 200;
+        double target = 200;
 
-    double target = 200;
+        double fuel = 1;
 
-    bool drawDead;
+        bool gameStarted = false;
+        bool drawDead;
 };
 
 Player::Player(QObject* parent) :
@@ -24,6 +26,11 @@ Player::Player(QObject* parent) :
 Player::~Player() {
     delete d;
 }
+
+void Player::begin() {
+    d->gameStarted = true;
+}
+
 void Player::draw(QPainter* painter) {
     painter->save();
 
@@ -47,12 +54,24 @@ double Player::angle() {
     return angle;
 }
 
+double Player::fuel() {
+    return d->fuel;
+}
+
+void Player::addFuel(double fuel) {
+    d->fuel += fuel;
+}
+
 void Player::tick(double xDistance) {
     // Move the aircraft
     QLineF flyLine(QPointF(50, d->y), QPointF(30, d->y));
     flyLine.setAngle(this->angle());
     flyLine.setLength(xDistance);
     d->y = flyLine.pointAt(-1).y();
+
+    if (d->gameStarted) d->fuel -= 0.0001;
+    if (d->fuel < 0) d->fuel = 0;
+    if (d->fuel > 1) d->fuel = 1;
 }
 
 void Player::setTarget(int y) {

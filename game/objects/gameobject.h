@@ -2,6 +2,7 @@
 #define GAMEOBJECT_H
 
 #include <QObject>
+#include <QSharedPointer>
 
 class QPainter;
 class QRandomGenerator64;
@@ -14,16 +15,17 @@ class GameObject : public QObject {
 
         virtual void draw(QPainter* painter, double xOffset) = 0;
         virtual void tick(QPolygonF playerPosition, double xOffset) = 0;
+        virtual QList<QSharedPointer<GameObject>> supplementaryObjects();
 
         double x();
         QRandomGenerator64* random();
 
     signals:
         void triggerGameOver();
+        void refuel(double amount);
 
     private:
         GameObjectPrivate* d;
-
 };
 
 typedef QSharedPointer<GameObject> GameObjectPtr;
