@@ -10,6 +10,7 @@
 #include <QKeyEvent>
 #include <QPainter>
 #include <QTimer>
+#include <QIcon>
 #include "game/audioengine.h"
 
 struct MainWindowPrivate {
@@ -31,6 +32,8 @@ MainWindow::MainWindow(QWidget* parent) : QOpenGLWidget(parent) {
     this->resize(1024, 768);
     this->setMouseTracking(true);
     this->setMinimumSize(1024, 768);
+
+    this->setWindowIcon(QIcon(":/app-icon.svg"));
 
     d->audio = new AudioEngine(this);
 

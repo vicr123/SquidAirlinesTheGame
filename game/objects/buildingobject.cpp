@@ -4,10 +4,13 @@
 #include "healthobject.h"
 #include <QPainter>
 #include <QRandomGenerator64>
+#include <QSvgRenderer>
 
 struct BuildingObjectPrivate {
     QRectF buildingRect;
     QColor color;
+
+    QSvgRenderer buildingLogo;
 };
 
 BuildingObject::BuildingObject(double x, QRandomGenerator64* random, QObject* parent) :
@@ -19,6 +22,14 @@ BuildingObject::BuildingObject(double x, QRandomGenerator64* random, QObject* pa
     d->buildingRect.moveBottomLeft(QPoint(x, 300));
 
     d->color = QColor(random->bounded(20), random->bounded(20), random->bounded(20));
+
+    switch (random->bounded(5)) {
+        case 0:
+            d->buildingLogo.load(QStringLiteral(":/frivoloco.svg"));
+            break;
+        default:
+            break;
+    }
 }
 
 BuildingObject::~BuildingObject() {
@@ -29,6 +40,16 @@ void BuildingObject::draw(QPainter* painter, double xOffset) {
     painter->save();
 
     painter->fillRect(d->buildingRect.translated(-xOffset, 0), d->color);
+
+    if (d->buildingLogo.isValid()) {
+        auto logoSize = d->buildingRect.size();
+        if (logoSize.width() > 30 && logoSize.height() > 30) {
+            QRectF rect;
+            rect.setSize(QSizeF(d->buildingLogo.defaultSize()).scaled(d->buildingRect.size() - QSize(20, 20), Qt::KeepAspectRatio));
+            rect.moveTopLeft(d->buildingRect.topLeft() + QPointF(10, 10) + QPointF(-xOffset, 0));
+            d->buildingLogo.render(painter, rect);
+        }
+    }
 
     painter->restore();
 }

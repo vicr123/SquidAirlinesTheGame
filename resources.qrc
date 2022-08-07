@@ -8,5 +8,7 @@
         <file>fog-of-war-right.svg</file>
         <file>fog-of-war-left.svg</file>
         <file>squid-airlines.svg</file>
+        <file>frivoloco.svg</file>
+        <file>app-icon.svg</file>
     </qresource>
 </RCC>

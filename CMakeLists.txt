@@ -39,6 +39,7 @@ add_executable(SquidAirlinesTheGame WIN32 MACOSX_BUNDLE
         game/audioengine.h game/audioengine.cpp
 
         Info.plist.in
+        icon.rc
     )
 
 target_link_libraries(SquidAirlinesTheGame
