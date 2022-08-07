@@ -7,13 +7,14 @@
 
 #include <QObject>
 
+class QRandomGenerator64;
 class QPainterPath;
 class QPainter;
 struct PlayerPrivate;
 class Player : public QObject {
         Q_OBJECT
     public:
-        explicit Player(QObject* parent = nullptr);
+        explicit Player(QRandomGenerator64* random, QObject* parent = nullptr);
         ~Player() override;
 
         void begin();
@@ -26,12 +27,18 @@ class Player : public QObject {
         double fuel();
         void addFuel(double fuel);
 
+        int health();
+        void damage();
+
         void tick(double xDistance);
 
         void setTarget(int y);
         void moveTarget(int y);
 
         void setDrawDead(bool drawDead);
+
+signals:
+        void triggerGameOver();
 
     private:
         PlayerPrivate* d;

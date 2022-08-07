@@ -7,8 +7,11 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QRect>
+#include <QRandomGenerator64>
 
 struct PlayerPrivate {
+        QRandomGenerator64* random;
+
         double y = 200;
         double target = 200;
 
@@ -16,11 +19,15 @@ struct PlayerPrivate {
 
         bool gameStarted = false;
         bool drawDead;
+
+        int health = 5;
+        int drawDamage = 0;
 };
 
-Player::Player(QObject* parent) :
+Player::Player(QRandomGenerator64* random, QObject* parent) :
     QObject(parent) {
     d = new PlayerPrivate();
+    d->random = random;
 }
 
 Player::~Player() {
@@ -34,9 +41,24 @@ void Player::begin() {
 void Player::draw(QPainter* painter) {
     painter->save();
 
+    QBrush brush;
+    if (d->drawDead) {
+        brush = Qt::red;
+    } else if (d->drawDamage > 0) {
+        brush = Qt::yellow;
+    } else {
+        brush = Qt::white;
+    }
+
+    auto path = this->planePath();
+    if (d->drawDamage > 0) {
+        //Rumble the aircraft
+        path.translate(QPointF(d->random->bounded(10.0) - 5, d->random->bounded(10.0) - 5));
+    }
+
     painter->setPen(Qt::transparent);
-    painter->setBrush(d->drawDead ? Qt::red : Qt::white);
-    painter->drawPath(this->planePath());
+    painter->setBrush(brush);
+    painter->drawPath(path);
 
     painter->restore();
 }
@@ -62,6 +84,16 @@ void Player::addFuel(double fuel) {
     d->fuel += fuel;
 }
 
+int Player::health() {
+    return d->health;
+}
+
+void Player::damage() {
+    d->health--;
+    d->drawDamage = 10;
+    emit triggerGameOver();
+}
+
 void Player::tick(double xDistance) {
     // Move the aircraft
     QLineF flyLine(QPointF(50, d->y), QPointF(30, d->y));
@@ -69,7 +101,9 @@ void Player::tick(double xDistance) {
     flyLine.setLength(xDistance);
     d->y = flyLine.pointAt(-1).y();
 
-    if (d->gameStarted) d->fuel -= 0.0001;
+    if (d->drawDamage > 0) d->drawDamage--;
+
+    if (d->gameStarted) d->fuel -= 0.0002;
     if (d->fuel < 0) d->fuel = 0;
     if (d->fuel > 1) d->fuel = 1;
 }

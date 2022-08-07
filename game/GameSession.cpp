@@ -18,35 +18,39 @@
 Q_DECLARE_METATYPE(QRandomGenerator64)
 
 struct GameSessionPrivate {
-        QRandomGenerator64 random;
-        QTimer* gameTimer;
-        QTimer* speedTimer;
+    QRandomGenerator64 random;
+    QTimer* gameTimer;
+    QTimer* speedTimer;
 
-        Player* player;
+    Player* player;
 
-        QTransform lastTransform;
+    QTransform lastTransform;
 
-        QList<GameObjectPtr> gameObjects;
+    QList<GameObjectPtr> gameObjects;
 
-        qreal x = 0;
-        qreal speed = 1;
+    qreal x = 0;
+    qreal speed = 1;
 
-        qreal nextGen = -1;
+    qreal nextGen = -1;
 
-        qreal hudOpacity = 0;
-        bool gameStarted = false;
+    qreal hudOpacity = 0;
+    bool gameStarted = false;
 
-        static QList<QMetaObject> gameObjectTypes;
+    qreal gameOverScrimOpacity = 0;
+
+    static QList<QMetaObject> gameObjectTypes;
 };
 
 QList<QMetaObject> GameSessionPrivate::gameObjectTypes = {
-    BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, TankObject::staticMetaObject};
+    BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, TankObject::staticMetaObject
+};
 
 GameSession::GameSession(QObject* parent) :
     QObject(parent) {
     d = new GameSessionPrivate();
 
-    d->player = new Player(this);
+    d->player = new Player(&d->random, this);
+    connect(d->player, &Player::triggerGameOver, this, &GameSession::triggerGameOver);
 
     d->gameTimer = new QTimer(this);
     d->gameTimer->setInterval(10);
@@ -97,7 +101,7 @@ void GameSession::drawScreen(QPainter* painter, QSize size) {
     // Draw the HUD
     QRectF fuelRect;
     fuelRect.setWidth(300);
-    fuelRect.setHeight(50);
+    fuelRect.setHeight(25);
     fuelRect.moveTopLeft(playArea.topLeft() + QPoint(50, 50));
 
     QRectF filledFuelRect = fuelRect;
@@ -107,6 +111,25 @@ void GameSession::drawScreen(QPainter* painter, QSize size) {
     painter->setBrush(Qt::transparent);
     painter->drawRect(fuelRect);
 
+    QRectF health;
+    health.setHeight(25);
+    health.setWidth(25);
+    health.moveLeft(fuelRect.left());
+    health.moveTop(fuelRect.bottom() + 10);
+
+    for (auto i = 0; i < 5; i++) {
+        painter->setPen(Qt::red);
+        painter->setBrush(d->player->health() >= i ? Qt::red : Qt::transparent);
+        painter->drawEllipse(health);
+
+        health.moveLeft(health.right() + 10);
+    }
+
+    painter->restore();
+
+    painter->save();
+    painter->setOpacity(d->gameOverScrimOpacity);
+    painter->fillRect(QRect(QPoint(0, 0), size), Qt::white);
     painter->restore();
 }
 
@@ -138,7 +161,7 @@ void GameSession::genObjects() {
     std::function<void(QList<GameObjectPtr>)> pushObject = [this, &pushObject](QList<GameObjectPtr> objects) {
         for (auto obj : objects) {
             connect(obj.data(), &GameObject::triggerGameOver, this, &GameSession::triggerGameOver);
-            connect(obj.data(), &GameObject::damage, this, &GameSession::triggerGameOver);
+            connect(obj.data(), &GameObject::damage, d->player, &Player::damage);
             connect(obj.data(), &GameObject::refuel, d->player, &Player::addFuel);
 
             d->gameObjects.append(obj);
@@ -154,18 +177,33 @@ void GameSession::genObjects() {
 
         auto typeIndex = d->random.bounded(d->gameObjectTypes.length());
         auto type = d->gameObjectTypes.at(typeIndex);
-        auto *inst = qobject_cast<GameObject*>(type.newInstance(Q_ARG(double, x), Q_ARG(QRandomGenerator64*, &d->random)));
+        auto* inst = qobject_cast<GameObject*>(type.newInstance(Q_ARG(double, x), Q_ARG(QRandomGenerator64*, &d->random)));
         pushObject({GameObjectPtr(inst)});
     }
     d->nextGen += genLength;
 }
 
 void GameSession::triggerGameOver() {
-    //    d->gameTimer->stop();
-    //    QTimer::singleShot(3000, this, [this] {
-    //        emit gameSessionEnded();
-    //    });
-    d->player->setDrawDead(true);
+    d->gameTimer->stop();
+
+    auto* anim = new QVariantAnimation(this);
+    anim->setStartValue(0.0);
+    anim->setEndValue(1.0);
+    anim->setDuration(2000);
+    anim->setEasingCurve(QEasingCurve::Linear);
+    connect(anim, &QVariantAnimation::valueChanged, this, [this](QVariant value) {
+        d->gameOverScrimOpacity = value.toReal();
+        emit requestPaint();
+    });
+    connect(anim, &QVariantAnimation::finished, this, [this, anim] {
+        anim->deleteLater();
+        QTimer::singleShot(3000, this, [this] {
+            emit gameSessionEnded();
+        });
+    });
+    anim->start();
+
+    //d->player->setDrawDead(true);
 }
 
 void GameSession::begin() {
