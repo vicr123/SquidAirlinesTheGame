@@ -38,11 +38,11 @@ PauseMenu::~PauseMenu() {
 
 void PauseMenu::drawMenu(QPainter* painter, QSize size) {
     //Block the game from being visible
-    QLinearGradient sky(QPoint(0, size.height()), QPoint(0, 0));
-    sky.setColorAt(0, QColor(0, 200, 255));
-    sky.setColorAt(1, QColor(0, 100, 255));
+    //QLinearGradient sky(QPoint(0, size.height()), QPoint(0, 0));
+    //sky.setColorAt(0, QColor(0, 200, 255));
+    //sky.setColorAt(1, QColor(0, 100, 255));
 
-    painter->fillRect(QRect(QPoint(0, 0), size), sky);
+    //painter->fillRect(QRect(QPoint(0, 0), size), sky);
 
     auto rect = this->middleRect(size);
 

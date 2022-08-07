@@ -164,7 +164,7 @@ void Player::setDrawDead(bool drawDead) {
 }
 
 QPainterPath Player::planePath() {
-    QLineF flyLine(QPointF(50, d->y), QPointF(30, d->y));
+    QLineF flyLine(QPointF(90, d->y), QPointF(70, d->y));
     flyLine.setAngle(this->angle());
 
     QLineF wingLine(flyLine.pointAt(0.3), flyLine.pointAt(0.8));

@@ -6,7 +6,7 @@
 #include "Player.h"
 #include "objects/buildingobject.h"
 #include "objects/tankobject.h"
-#include "objects/thunderstormobject.h".h"
+#include "objects/thunderstormobject.h"
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QPainter>
@@ -43,6 +43,10 @@ struct GameSessionPrivate {
     QSvgRenderer fuel;
     QSvgRenderer health;
     QSvgRenderer healthLost;
+    QSvgRenderer fogOfWarRight;
+    QSvgRenderer fogOfWarLeft;
+
+    bool paused = false;
 
     static QList<QMetaObject> gameObjectTypes;
 };
@@ -72,6 +76,8 @@ GameSession::GameSession(QObject* parent) :
     d->fuel.load(QStringLiteral(":/fuel.svg"));
     d->health.load(QStringLiteral(":/health.svg"));
     d->healthLost.load(QStringLiteral(":/health-lost.svg"));
+    d->fogOfWarRight.load(QStringLiteral(":/fog-of-war-right.svg"));
+    d->fogOfWarLeft.load(QStringLiteral(":/fog-of-war-left.svg"));
 }
 
 GameSession::~GameSession() {
@@ -86,21 +92,38 @@ void GameSession::drawScreen(QPainter* painter, QSize size) {
     playArea.setSize(playSize);
     playArea.moveCenter(QRect(QPoint(0, 0), size).center());
 
-    painter->save();
-    painter->setWindow(QRect(0, 0, 400, 300));
-    painter->setViewport(playArea);
+    if (!d->paused) {
+        painter->save();
+        painter->setWindow(QRect(0, 0, 400, 300));
+        painter->setViewport(playArea);
 
-    d->lastTransform = painter->combinedTransform();
+        d->lastTransform = painter->combinedTransform();
 
-    //    for (int i = 0; i < 400; i++) {
-    //        painter->drawLine(i, 0, i, static_cast<int>(i + d->x) % 400);
-    //    }
+        for (auto gameObject : d->gameObjects) {
+            gameObject->draw(painter, d->x);
+        }
 
-    for (auto gameObject : d->gameObjects) {
-        gameObject->draw(painter, d->x);
+        d->player->draw(painter);
+
+        painter->restore();
     }
 
-    d->player->draw(painter);
+    //Draw the fog of war
+    painter->save();
+
+    QRect fogOfWarRect;
+    fogOfWarRect.setSize(QSize(10, 16).scaled(size, Qt::KeepAspectRatio));
+    fogOfWarRect.moveTopRight(playArea.topRight());
+    d->fogOfWarRight.render(painter, fogOfWarRect);
+
+    auto rightRect = QRect(playArea.topRight(), QPoint(size.width(), size.height()));
+    painter->fillRect(rightRect, QColor(100, 100, 100));
+
+    fogOfWarRect.moveTopLeft(playArea.topLeft());
+    d->fogOfWarLeft.render(painter, fogOfWarRect);
+
+    auto leftRect = QRect(QPoint(0, 0), playArea.bottomLeft());
+    painter->fillRect(leftRect, QColor(100, 100, 100));
 
     painter->restore();
 
@@ -170,9 +193,13 @@ void GameSession::keyPressEvent(QKeyEvent* event) {
             d->player->moveTarget(10);
             break;
         case Qt::Key_Escape:
-            d->gameTimer->stop();
-            d->speedTimer->stop();
-            emit paused();
+            if (d->gameTimer->isActive()) {
+                //Don't pause if we are in the middle of a game over
+                d->gameTimer->stop();
+                d->speedTimer->stop();
+                d->paused = true;
+                emit paused();
+            }
             break;
     }
 }
@@ -242,6 +269,7 @@ void GameSession::triggerGameOver() {
 void GameSession::resumeAfterPause() {
     d->gameTimer->start();
     d->speedTimer->start();
+    d->paused = false;
 }
 
 void GameSession::begin() {

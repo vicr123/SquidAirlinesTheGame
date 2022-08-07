@@ -5,5 +5,7 @@
         <file>fuel.svg</file>
         <file>health.svg</file>
         <file>health-lost.svg</file>
+        <file>fog-of-war-right.svg</file>
+        <file>fog-of-war-left.svg</file>
     </qresource>
 </RCC>
