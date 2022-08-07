@@ -23,6 +23,7 @@ class GameObject : public QObject {
     signals:
         void triggerGameOver();
         void refuel(double amount);
+        void damage();
 
     private:
         GameObjectPrivate* d;

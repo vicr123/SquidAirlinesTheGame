@@ -5,6 +5,7 @@
 #include "GameSession.h"
 #include "Player.h"
 #include "objects/buildingobject.h"
+#include "objects/tankobject.h"
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QPainter>
@@ -39,7 +40,7 @@ struct GameSessionPrivate {
 };
 
 QList<QMetaObject> GameSessionPrivate::gameObjectTypes = {
-    BuildingObject::staticMetaObject};
+    BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, TankObject::staticMetaObject};
 
 GameSession::GameSession(QObject* parent) :
     QObject(parent) {
@@ -137,6 +138,7 @@ void GameSession::genObjects() {
     std::function<void(QList<GameObjectPtr>)> pushObject = [this, &pushObject](QList<GameObjectPtr> objects) {
         for (auto obj : objects) {
             connect(obj.data(), &GameObject::triggerGameOver, this, &GameSession::triggerGameOver);
+            connect(obj.data(), &GameObject::damage, this, &GameSession::triggerGameOver);
             connect(obj.data(), &GameObject::refuel, d->player, &Player::addFuel);
 
             d->gameObjects.append(obj);

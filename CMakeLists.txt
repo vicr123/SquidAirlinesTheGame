@@ -28,6 +28,7 @@ add_executable(SquidAirlinesTheGame WIN32 MACOSX_BUNDLE
         game/objects/gameobject.h game/objects/gameobject.cpp
         game/objects/buildingobject.h game/objects/buildingobject.cpp
         game/objects/fuelobject.h game/objects/fuelobject.cpp
+        game/objects/tankobject.h game/objects/tankobject.cpp
 
         Info.plist.in
     )
