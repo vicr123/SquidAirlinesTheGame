@@ -7,5 +7,6 @@
         <file>health-lost.svg</file>
         <file>fog-of-war-right.svg</file>
         <file>fog-of-war-left.svg</file>
+        <file>squid-airlines.svg</file>
     </qresource>
 </RCC>

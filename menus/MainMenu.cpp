@@ -12,13 +12,16 @@
 #include <QSize>
 #include <QVariantAnimation>
 #include <QMessageBox>
+#include <QSvgRenderer>
 
 struct MainMenuPrivate {
-        QVariantAnimation opacityAnim;
+    QVariantAnimation opacityAnim;
     NavigationManager* nav;
+
+    QSvgRenderer squidAirlinesTitle;
 };
 
-MainMenu::MainMenu(QObject *parent) : AbstractMenu(parent) {
+MainMenu::MainMenu(QObject* parent) : AbstractMenu(parent) {
     d = new MainMenuPrivate();
     d->nav = new NavigationManager(this);
 
@@ -62,19 +65,26 @@ MainMenu::MainMenu(QObject *parent) : AbstractMenu(parent) {
     d->nav->addNavigationElement(quitButton);
 
     connect(d->nav, &NavigationManager::requestPaint, this, &MainMenu::requestPaint);
+
+    d->squidAirlinesTitle.load(QStringLiteral(":/squid-airlines.svg"));
 }
 
 MainMenu::~MainMenu() {
     delete d;
 }
 
-void MainMenu::drawMenu(QPainter *painter, QSize size) {
+void MainMenu::drawMenu(QPainter* painter, QSize size) {
     auto rect = this->middleRect(size);
 
     painter->save();
     painter->setOpacity(d->opacityAnim.currentValue().toDouble());
 
-    painter->drawText(rect.left(), rect.top(), "Menu goes here");
+    QRect squidAirlinesRect;
+    squidAirlinesRect.setWidth(400);
+    squidAirlinesRect.setHeight(200);
+    squidAirlinesRect.moveCenter(rect.center());
+    squidAirlinesRect.moveTop(rect.top() + 20);
+    d->squidAirlinesTitle.render(painter, squidAirlinesRect);
 
     d->nav->paint(painter, rect);
 
