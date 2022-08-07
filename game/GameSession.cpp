@@ -60,9 +60,8 @@ GameSession::GameSession(QObject* parent) :
     d->speedTimer = new QTimer(this);
     d->speedTimer->setInterval(10);
     connect(d->speedTimer, &QTimer::timeout, this, [this] {
-        d->speed *= 1.00001;
+        d->speed *= 1.00005;
     });
-    d->speedTimer->start();
 }
 
 GameSession::~GameSession() {
@@ -117,7 +116,7 @@ void GameSession::drawScreen(QPainter* painter, QSize size) {
     health.moveLeft(fuelRect.left());
     health.moveTop(fuelRect.bottom() + 10);
 
-    for (auto i = 0; i < 5; i++) {
+    for (auto i = 1; i <= 5; i++) {
         painter->setPen(Qt::red);
         painter->setBrush(d->player->health() >= i ? Qt::red : Qt::transparent);
         painter->drawEllipse(health);
@@ -162,6 +161,7 @@ void GameSession::genObjects() {
         for (auto obj : objects) {
             connect(obj.data(), &GameObject::triggerGameOver, this, &GameSession::triggerGameOver);
             connect(obj.data(), &GameObject::damage, d->player, &Player::damage);
+            connect(obj.data(), &GameObject::heal, d->player, &Player::heal);
             connect(obj.data(), &GameObject::refuel, d->player, &Player::addFuel);
 
             d->gameObjects.append(obj);
@@ -209,6 +209,7 @@ void GameSession::triggerGameOver() {
 void GameSession::begin() {
     d->gameStarted = true;
     d->player->begin();
+    d->speedTimer->start();
 
     d->nextGen = d->x;
     this->genObjects();

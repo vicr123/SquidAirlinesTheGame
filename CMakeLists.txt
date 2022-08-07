@@ -14,6 +14,7 @@ find_package(Qt6 COMPONENTS
         Widgets
         OpenGL
         OpenGLWidgets
+        Svg
         REQUIRED)
 
 add_executable(SquidAirlinesTheGame WIN32 MACOSX_BUNDLE
@@ -31,6 +32,7 @@ add_executable(SquidAirlinesTheGame WIN32 MACOSX_BUNDLE
         game/objects/buildingobject.h game/objects/buildingobject.cpp
         game/objects/fuelobject.h game/objects/fuelobject.cpp
         game/objects/tankobject.h game/objects/tankobject.cpp
+        game/objects/healthobject.h game/objects/healthobject.cpp
         game/audioengine.h game/audioengine.cpp
 
         Info.plist.in
@@ -42,6 +44,7 @@ target_link_libraries(SquidAirlinesTheGame
         Qt::Widgets
         Qt::OpenGL
         Qt::OpenGLWidgets
+        Qt::Svg
         QMidi
         )
     target_include_directories(SquidAirlinesTheGame PRIVATE ${CMAKE_SOURCE_DIR}/QMidi/src)

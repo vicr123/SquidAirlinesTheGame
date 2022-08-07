@@ -29,6 +29,7 @@ class Player : public QObject {
 
         int health();
         void damage();
+        void heal();
 
         void tick(double xDistance);
 
@@ -37,7 +38,7 @@ class Player : public QObject {
 
         void setDrawDead(bool drawDead);
 
-signals:
+    signals:
         void triggerGameOver();
 
     private:

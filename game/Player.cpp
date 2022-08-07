@@ -10,21 +10,21 @@
 #include <QRandomGenerator64>
 
 struct PlayerPrivate {
-        QRandomGenerator64* random;
+    QRandomGenerator64* random;
 
-        double y = 200;
-        double target = 200;
+    double y = 200;
+    double target = 200;
 
-        double fuel = 0.1;
+    double fuel = 1;
 
-        bool gameStarted = false;
-        bool drawDead;
+    bool gameStarted = false;
+    bool drawDead;
 
-        int health = 5;
-        int drawDamage = 0;
+    int health = 5;
+    int drawDamage = 0;
 
-        bool noFuel = false;
-        double noFuelTarget = 200;
+    bool noFuel = false;
+    double noFuelTarget = 200;
 };
 
 Player::Player(QRandomGenerator64* random, QObject* parent) :
@@ -94,7 +94,12 @@ int Player::health() {
 void Player::damage() {
     d->health--;
     d->drawDamage = 10;
-    emit triggerGameOver();
+
+    if (d->health <= 0) emit triggerGameOver();
+}
+
+void Player::heal() {
+    d->health++;
 }
 
 void Player::tick(double xDistance) {
@@ -115,6 +120,10 @@ void Player::tick(double xDistance) {
             d->noFuel = true;
         }
         d->noFuelTarget += 0.5;
+
+        if (flyLine.p1().y() > 300) {
+            emit triggerGameOver();
+        }
     } else {
         d->noFuel = false;
     }

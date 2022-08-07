@@ -1,12 +1,13 @@
 #include "buildingobject.h"
 
 #include "fuelobject.h"
+#include "healthobject.h"
 #include <QPainter>
 #include <QRandomGenerator64>
 
 struct BuildingObjectPrivate {
-        QRectF buildingRect;
-        QColor color;
+    QRectF buildingRect;
+    QColor color;
 };
 
 BuildingObject::BuildingObject(double x, QRandomGenerator64* random, QObject* parent) :
@@ -39,20 +40,20 @@ void BuildingObject::tick(QPolygonF playerPosition, double xOffset) {
 }
 
 QList<QSharedPointer<GameObject>> BuildingObject::supplementaryObjects() {
-    switch (this->random()->bounded(10)) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-            break;
+    switch (this->random()->bounded(50)) {
         case 7:
         case 8:
         case 9:
+        case 0:
+        case 1:
+        case 2:
             return {
                 GameObjectPtr(new FuelObject(d->buildingRect.center().x(), d->buildingRect.top() - 10, this->random()))};
+        case 10:
+            return {
+                GameObjectPtr(new HealthObject(d->buildingRect.center().x(), d->buildingRect.top() - 10, this->random()))};
+        default:
+            break;
     }
 
     return {};

@@ -24,6 +24,7 @@ class GameObject : public QObject {
         void triggerGameOver();
         void refuel(double amount);
         void damage();
+        void heal();
 
     private:
         GameObjectPrivate* d;
