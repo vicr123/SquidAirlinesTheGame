@@ -15,13 +15,16 @@ struct PlayerPrivate {
         double y = 200;
         double target = 200;
 
-        double fuel = 1;
+        double fuel = 0.1;
 
         bool gameStarted = false;
         bool drawDead;
 
         int health = 5;
         int drawDamage = 0;
+
+        bool noFuel = false;
+        double noFuelTarget = 200;
 };
 
 Player::Player(QRandomGenerator64* random, QObject* parent) :
@@ -69,7 +72,7 @@ QPolygonF Player::poly() {
 
 double Player::angle() {
     // -180 + whatever
-    auto distance = d->y - d->target;
+    auto distance = d->y - (d->noFuel ? d->noFuelTarget : d->target);
     auto angle = -180 + distance / 2;
     if (angle > -135) angle = -135;
     if (angle < -225) angle = -225;
@@ -104,8 +107,17 @@ void Player::tick(double xDistance) {
     if (d->drawDamage > 0) d->drawDamage--;
 
     if (d->gameStarted) d->fuel -= 0.0002;
-    if (d->fuel < 0) d->fuel = 0;
     if (d->fuel > 1) d->fuel = 1;
+    if (d->fuel < 0) {
+        //Take over control of the aircraft
+        if (!d->noFuel) {
+            d->noFuelTarget = d->target;
+            d->noFuel = true;
+        }
+        d->noFuelTarget += 0.5;
+    } else {
+        d->noFuel = false;
+    }
 }
 
 void Player::setTarget(int y) {

@@ -105,7 +105,7 @@ void GameSession::drawScreen(QPainter* painter, QSize size) {
     fuelRect.moveTopLeft(playArea.topLeft() + QPoint(50, 50));
 
     QRectF filledFuelRect = fuelRect;
-    filledFuelRect.setWidth(fuelRect.width() * d->player->fuel());
+    filledFuelRect.setWidth(fuelRect.width() * qMax(0.0, d->player->fuel()));
     painter->fillRect(filledFuelRect, Qt::red);
     painter->setPen(Qt::black);
     painter->setBrush(Qt::transparent);
