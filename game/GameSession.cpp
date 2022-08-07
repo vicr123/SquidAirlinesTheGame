@@ -197,9 +197,7 @@ void GameSession::triggerGameOver() {
     });
     connect(anim, &QVariantAnimation::finished, this, [this, anim] {
         anim->deleteLater();
-        QTimer::singleShot(3000, this, [this] {
-            emit gameSessionEnded();
-        });
+        emit gameSessionEnded();
     });
     anim->start();
 

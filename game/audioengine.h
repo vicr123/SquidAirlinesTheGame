@@ -12,14 +12,20 @@ class AudioEngine : public QObject {
 
         void trackDone();
 
-        void startGame();
-        void endGame();
+        enum class State {
+            PreGame,
+            Game5H,
+            EndGame
+        };
+
+        void setState(State state);
 
     signals:
 
     private:
         AudioEnginePrivate* d;
 
+        void animateTrackVolume(int track, double to);
 };
 
 class QMidiOut;
@@ -36,6 +42,7 @@ class AudioTrack : public QObject {
         void consumeEvent();
 
         void setVolume(double volume);
+        double volume();
 
     signals:
         void done();

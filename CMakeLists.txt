@@ -23,6 +23,7 @@ add_executable(SquidAirlinesTheGame WIN32 MACOSX_BUNDLE
         MainWindow.cpp MainWindow.h
         menus/AbstractMenu.cpp menus/AbstractMenu.h
         menus/MainMenu.cpp menus/MainMenu.h
+        menus/gameovermenu.h menus/gameovermenu.cpp
         menus/nav/NavigationManager.cpp menus/nav/NavigationManager.h
         menus/nav/NavigationElement.cpp menus/nav/NavigationElement.h
         menus/nav/NavigationButton.h menus/nav/NavigationButton.cpp

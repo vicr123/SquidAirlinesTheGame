@@ -6,6 +6,7 @@
 #define SQUIDAIRLINESTHEGAME_GAMESESSION_H
 
 #include <QObject>
+#include "audioengine.h"
 
 class QKeyEvent;
 class QMouseEvent;
@@ -32,6 +33,7 @@ class GameSession : public QObject {
     signals:
         void gameSessionEnded();
         void requestPaint();
+        void changeAudioState(AudioEngine::State state);
 
     private:
         GameSessionPrivate* d;

@@ -5,6 +5,7 @@
 #include "MainWindow.h"
 #include "game/GameSession.h"
 #include "menus/MainMenu.h"
+#include "menus/gameovermenu.h"
 #include <QKeyEvent>
 #include <QPainter>
 #include <QTimer>
@@ -17,6 +18,7 @@ struct MainWindowPrivate {
 
     QPointer<GameSession> session;
     MainMenu* mainMenu;
+    GameOverMenu* gameOverMenu;
     bool playing = false;
 };
 
@@ -45,7 +47,15 @@ MainWindow::MainWindow(QWidget* parent) : QOpenGLWidget(parent) {
     connect(d->mainMenu, &MainMenu::startGame, this, [this] {
         d->playing = true;
         d->session->begin();
-        d->audio->startGame();
+        d->audio->setState(AudioEngine::State::Game5H);
+    });
+
+    d->gameOverMenu = new GameOverMenu(this);
+    connect(d->gameOverMenu, &GameOverMenu::mainMenu, this, [this] {
+        d->menusToDraw.removeAll(d->gameOverMenu);
+        d->mainMenu->showAgain();
+        d->audio->setState(AudioEngine::State::PreGame);
+        this->prepareNewGameSession();
     });
 }
 
@@ -109,10 +119,14 @@ void MainWindow::prepareNewGameSession() {
     connect(d->session, &GameSession::requestPaint, this, [this] {
         this->update();
     });
+    connect(d->session, &GameSession::changeAudioState, this, [this](AudioEngine::State state) {
+        d->audio->setState(state);
+    });
     connect(d->session, &GameSession::gameSessionEnded, this, [this] {
         d->playing = false;
-        d->mainMenu->showAgain();
-        d->audio->endGame();
-        this->prepareNewGameSession();
+        d->menusToDraw.append(d->gameOverMenu);
+        d->audio->setState(AudioEngine::State::EndGame);
+
+        this->update();
     });
 }

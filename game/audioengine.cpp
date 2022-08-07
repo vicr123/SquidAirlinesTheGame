@@ -51,27 +51,34 @@ void AudioEngine::trackDone() {
     }
 }
 
-void AudioEngine::startGame() {
-    auto anim = new QVariantAnimation();
-    anim->setStartValue(0.0);
-    anim->setEndValue(1.0);
-    anim->setDuration(1000);
-    connect(anim, &QVariantAnimation::valueChanged, this, [this](QVariant value) {
-        d->tracks.at(0)->setVolume(value.toDouble());
-        d->tracks.at(1)->setVolume(value.toDouble());
-    });
-    connect(anim, &QVariantAnimation::finished, anim, &QVariantAnimation::deleteLater);
-    anim->start();
+void AudioEngine::setState(State state) {
+    switch (state) {
+        case State::PreGame:
+            this->animateTrackVolume(0, 0);
+            this->animateTrackVolume(1, 0);
+            this->animateTrackVolume(2, 0.7);
+            break;
+        case State::Game5H:
+            this->animateTrackVolume(0, 1);
+            this->animateTrackVolume(1, 1);
+            this->animateTrackVolume(2, 0.7);
+            this->animateTrackVolume(3, 0.7);
+            break;
+        case State::EndGame:
+            this->animateTrackVolume(0, 0);
+            this->animateTrackVolume(1, 0);
+            this->animateTrackVolume(2, 0);
+            break;
+    }
 }
 
-void AudioEngine::endGame() {
+void AudioEngine::animateTrackVolume(int track, double to) {
     auto anim = new QVariantAnimation();
-    anim->setStartValue(1.0);
-    anim->setEndValue(0.0);
+    anim->setStartValue(d->tracks.at(track)->volume());
+    anim->setEndValue(to);
     anim->setDuration(1000);
-    connect(anim, &QVariantAnimation::valueChanged, this, [this](QVariant value) {
-        d->tracks.at(0)->setVolume(value.toDouble());
-        d->tracks.at(1)->setVolume(value.toDouble());
+    connect(anim, &QVariantAnimation::valueChanged, this, [this, track](QVariant value) {
+        d->tracks.at(track)->setVolume(value.toDouble());
     });
     connect(anim, &QVariantAnimation::finished, anim, &QVariantAnimation::deleteLater);
     anim->start();
@@ -142,4 +149,8 @@ void AudioTrack::consumeEvent() {
 
 void AudioTrack::setVolume(double volume) {
     d->volume = volume;
+}
+
+double AudioTrack::volume() {
+    return d->volume;
 }
