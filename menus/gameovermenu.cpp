@@ -6,6 +6,8 @@
 
 struct GameOverMenuPrivate {
     NavigationManager* nav;
+
+    quint64 distanceTravelled;
 };
 
 GameOverMenu::GameOverMenu(QObject* parent)
@@ -27,6 +29,9 @@ GameOverMenu::~GameOverMenu() {
     delete d;
 }
 
+void GameOverMenu::setDistanceTravelled(quint64 distance) {
+    d->distanceTravelled = distance;
+}
 
 void GameOverMenu::drawMenu(QPainter* painter, QSize size) {
     auto rect = this->middleRect(size);
@@ -49,6 +54,15 @@ void GameOverMenu::drawMenu(QPainter* painter, QSize size) {
 
     painter->drawText(gameOverRect, Qt::AlignCenter, "Game Over");
     painter->restore();
+
+    auto distance = QStringLiteral("You managed to fly %1 m.").arg(d->distanceTravelled);
+
+    QRect distanceRect;
+    distanceRect.setWidth(painter->fontMetrics().horizontalAdvance(distance));
+    distanceRect.setHeight(painter->fontMetrics().height());
+    distanceRect.moveCenter(rect.center());
+    distanceRect.moveTop(gameOverRect.bottom() + 20);
+    painter->drawText(distanceRect, Qt::AlignCenter, distance);
 
     d->nav->paint(painter, rect);
 

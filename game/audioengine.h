@@ -15,6 +15,7 @@ class AudioEngine : public QObject {
         enum class State {
             PreGame,
             Game5H,
+            GameDanger,
             EndGame
         };
 

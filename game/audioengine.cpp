@@ -10,6 +10,8 @@ struct AudioEnginePrivate {
     QMidiFile midiFile;
     QMidiOut midiOut;
 
+    AudioEngine::State state = AudioEngine::State::PreGame;
+
     QList<AudioTrack*> tracks;
     int tracksDone = 0;
 };
@@ -34,6 +36,7 @@ AudioEngine::AudioEngine(QObject* parent)
     d->tracks.at(1)->setVolume(0);
     d->tracks.at(2)->setVolume(0.7);
     d->tracks.at(3)->setVolume(0.7);
+    d->tracks.at(4)->setVolume(0);
 }
 
 AudioEngine::~AudioEngine() {
@@ -52,24 +55,39 @@ void AudioEngine::trackDone() {
 }
 
 void AudioEngine::setState(State state) {
+    if (d->state == state) return;
+
     switch (state) {
         case State::PreGame:
             this->animateTrackVolume(0, 0);
             this->animateTrackVolume(1, 0);
             this->animateTrackVolume(2, 0.7);
+            this->animateTrackVolume(3, 0.7);
+            this->animateTrackVolume(4, 0);
             break;
         case State::Game5H:
             this->animateTrackVolume(0, 1);
             this->animateTrackVolume(1, 1);
             this->animateTrackVolume(2, 0.7);
             this->animateTrackVolume(3, 0.7);
+            this->animateTrackVolume(4, 0);
             break;
         case State::EndGame:
             this->animateTrackVolume(0, 0);
             this->animateTrackVolume(1, 0);
             this->animateTrackVolume(2, 0);
+            this->animateTrackVolume(3, 0.7);
+            this->animateTrackVolume(4, 0);
+            break;
+        case State::GameDanger:
+            this->animateTrackVolume(0, 1);
+            this->animateTrackVolume(1, 1);
+            this->animateTrackVolume(2, 0.7);
+            this->animateTrackVolume(3, 0.7);
+            this->animateTrackVolume(4, 0.7);
             break;
     }
+    d->state = state;
 }
 
 void AudioEngine::animateTrackVolume(int track, double to) {

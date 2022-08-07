@@ -26,14 +26,18 @@ class GameSession : public QObject {
         void keyPressEvent(QKeyEvent* event);
         void mouseMoveEvent(QMouseEvent* event);
 
+        quint64 distanceTravelled();
+
         void genObjects();
 
         void triggerGameOver();
+        void resumeAfterPause();
 
     signals:
         void gameSessionEnded();
         void requestPaint();
         void changeAudioState(AudioEngine::State state);
+        void paused();
 
     private:
         GameSessionPrivate* d;

@@ -144,11 +144,20 @@ void GameSession::keyPressEvent(QKeyEvent* event) {
         case Qt::Key_Down:
             d->player->moveTarget(10);
             break;
+        case Qt::Key_Escape:
+            d->gameTimer->stop();
+            d->speedTimer->stop();
+            emit paused();
+            break;
     }
 }
 
 void GameSession::mouseMoveEvent(QMouseEvent* event) {
     d->player->setTarget(this->toGameCoordinates(event->pos()).y());
+}
+
+quint64 GameSession::distanceTravelled() {
+    return d->x;
 }
 
 void GameSession::genObjects() {
@@ -204,6 +213,11 @@ void GameSession::triggerGameOver() {
     //d->player->setDrawDead(true);
 }
 
+void GameSession::resumeAfterPause() {
+    d->gameTimer->start();
+    d->speedTimer->start();
+}
+
 void GameSession::begin() {
     d->gameStarted = true;
     d->player->begin();
@@ -233,6 +247,14 @@ void GameSession::tick() {
     auto playerPosition = d->player->poly();
     for (auto gameObject : d->gameObjects) {
         gameObject->tick(playerPosition, d->x);
+    }
+
+    if (d->gameStarted) {
+        if (d->player->health() <= 2 || d->player->fuel() < 0.2) {
+            emit changeAudioState(AudioEngine::State::GameDanger);
+        } else {
+            emit changeAudioState(AudioEngine::State::Game5H);
+        }
     }
 
     this->genObjects();

@@ -10,6 +10,8 @@ class GameOverMenu : public AbstractMenu {
         explicit GameOverMenu(QObject* parent = nullptr);
         ~GameOverMenu();
 
+        void setDistanceTravelled(quint64 distance);
+
     signals:
         void mainMenu();
 

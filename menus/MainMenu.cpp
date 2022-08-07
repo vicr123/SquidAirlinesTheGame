@@ -11,6 +11,7 @@
 #include <QPainter>
 #include <QSize>
 #include <QVariantAnimation>
+#include <QMessageBox>
 
 struct MainMenuPrivate {
         QVariantAnimation opacityAnim;
@@ -29,7 +30,7 @@ MainMenu::MainMenu(QObject *parent) : AbstractMenu(parent) {
 
     auto playButton = new NavigationButton(this);
     playButton->setText("Play");
-    playButton->setCenterPoint(QPoint(400, 400));
+    playButton->setCenterPoint(QPoint(400, 350));
     connect(playButton, &NavigationButton::activated, this, [this] {
         d->opacityAnim.setStartValue(1.0);
         d->opacityAnim.setEndValue(0.0);
@@ -41,8 +42,16 @@ MainMenu::MainMenu(QObject *parent) : AbstractMenu(parent) {
 
     auto optionsButton = new NavigationButton(this);
     optionsButton->setText("Options");
-    optionsButton->setCenterPoint(QPoint(400, 450));
+    optionsButton->setCenterPoint(QPoint(400, 400));
     d->nav->addNavigationElement(optionsButton);
+
+    auto creditsButton = new NavigationButton(this);
+    creditsButton->setText("Credits");
+    creditsButton->setCenterPoint(QPoint(400, 450));
+    connect(creditsButton, &NavigationButton::activated, this, [this, parent] {
+        QMessageBox::critical(qobject_cast<QWidget*>(parent), "Credits", "Thanks to Royce551 for operating Squid Airlines\n\nMUSIC:\n\"Overworld\"\nKevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 3.0\nhttp://creativecommons.org/licenses/by/3.0/");
+    });
+    d->nav->addNavigationElement(creditsButton);
 
     auto quitButton = new NavigationButton(this);
     quitButton->setText("Quit");

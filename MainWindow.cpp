@@ -6,6 +6,7 @@
 #include "game/GameSession.h"
 #include "menus/MainMenu.h"
 #include "menus/gameovermenu.h"
+#include "menus/pausemenu.h"
 #include <QKeyEvent>
 #include <QPainter>
 #include <QTimer>
@@ -17,8 +18,11 @@ struct MainWindowPrivate {
     AudioEngine* audio;
 
     QPointer<GameSession> session;
+
     MainMenu* mainMenu;
     GameOverMenu* gameOverMenu;
+    PauseMenu* pauseMenu;
+
     bool playing = false;
 };
 
@@ -51,8 +55,27 @@ MainWindow::MainWindow(QWidget* parent) : QOpenGLWidget(parent) {
     });
 
     d->gameOverMenu = new GameOverMenu(this);
+    connect(d->gameOverMenu, &GameOverMenu::requestPaint, this, [this] {
+        this->update();
+    });
     connect(d->gameOverMenu, &GameOverMenu::mainMenu, this, [this] {
         d->menusToDraw.removeAll(d->gameOverMenu);
+        d->mainMenu->showAgain();
+        d->audio->setState(AudioEngine::State::PreGame);
+        this->prepareNewGameSession();
+    });
+
+    d->pauseMenu = new PauseMenu(this);
+    connect(d->pauseMenu, &PauseMenu::requestPaint, this, [this] {
+        this->update();
+    });
+    connect(d->pauseMenu, &PauseMenu::resume, this, [this] {
+        d->playing = true;
+        d->session->resumeAfterPause();
+        d->menusToDraw.removeAll(d->pauseMenu);
+    });
+    connect(d->pauseMenu, &PauseMenu::quit, this, [this] {
+        d->menusToDraw.removeAll(d->pauseMenu);
         d->mainMenu->showAgain();
         d->audio->setState(AudioEngine::State::PreGame);
         this->prepareNewGameSession();
@@ -122,8 +145,14 @@ void MainWindow::prepareNewGameSession() {
     connect(d->session, &GameSession::changeAudioState, this, [this](AudioEngine::State state) {
         d->audio->setState(state);
     });
+    connect(d->session, &GameSession::paused, this, [this]() {
+        d->playing = false;
+        d->audio->setState(AudioEngine::State::EndGame);
+        d->menusToDraw.append(d->pauseMenu);
+    });
     connect(d->session, &GameSession::gameSessionEnded, this, [this] {
         d->playing = false;
+        d->gameOverMenu->setDistanceTravelled(d->session->distanceTravelled());
         d->menusToDraw.append(d->gameOverMenu);
         d->audio->setState(AudioEngine::State::EndGame);
 
