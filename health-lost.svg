@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="16"
+   height="16"
+   viewBox="0 0 4.2333332 4.2333333"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   sodipodi:docname="health-lost.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="true"
+     inkscape:zoom="41.403919"
+     inkscape:cx="7.4751378"
+     inkscape:cy="11.32743"
+     inkscape:window-width="2560"
+     inkscape:window-height="1369"
+     inkscape:window-x="3832"
+     inkscape:window-y="723"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid9"
+       empspacing="4" />
+    <inkscape:grid
+       type="xygrid"
+       id="grid1325"
+       empspacing="1"
+       originy="0.13229166"
+       originx="0.13229166"
+       dotted="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="path8166"
+       style="color:#000000;fill:#000000;stroke-linecap:round;stroke-linejoin:round"
+       d="M 1.3683919 0.46508789 A 1.0583332 1.0583333 45 0 0 0.62011719 0.77514648 A 1.0583332 1.0583333 45 0 0 0.62011719 2.271696 L 2.1166667 3.7682454 L 3.6132161 2.271696 A 1.0583333 1.0583333 0 0 0 3.6132161 0.77514648 A 1.0583333 1.0583333 0 0 0 2.1166667 0.77514648 A 1.0583332 1.0583333 45 0 0 1.3683919 0.46508789 z M 1.3683919 0.7286377 C 1.5711049 0.7286377 1.773501 0.80663492 1.929598 0.96273193 A 0.26460981 0.26460981 0 0 0 2.3047689 0.96273193 C 2.6169629 0.65053789 3.1134366 0.65053786 3.4256307 0.96273193 C 3.7378247 1.274926 3.7378247 1.7719164 3.4256307 2.0841105 L 2.1171834 3.3946248 L 0.80666911 2.0841105 C 0.49447504 1.7719165 0.49447497 1.274926 0.80666911 0.96273193 C 0.96276614 0.8066349 1.165679 0.72863769 1.3683919 0.7286377 z " />
+  </g>
+</svg>

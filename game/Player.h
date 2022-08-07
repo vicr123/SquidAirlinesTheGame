@@ -31,6 +31,8 @@ class Player : public QObject {
         void damage();
         void heal();
 
+        void stun(int time);
+
         void tick(double xDistance);
 
         void setTarget(int y);

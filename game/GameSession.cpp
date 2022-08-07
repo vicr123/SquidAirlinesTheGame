@@ -6,6 +6,7 @@
 #include "Player.h"
 #include "objects/buildingobject.h"
 #include "objects/tankobject.h"
+#include "objects/thunderstormobject.h".h"
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QPainter>
@@ -14,6 +15,7 @@
 #include <QSize>
 #include <QTimer>
 #include <QVariantAnimation>
+#include <QSvgRenderer>
 
 Q_DECLARE_METATYPE(QRandomGenerator64)
 
@@ -38,11 +40,15 @@ struct GameSessionPrivate {
 
     qreal gameOverScrimOpacity = 0;
 
+    QSvgRenderer fuel;
+    QSvgRenderer health;
+    QSvgRenderer healthLost;
+
     static QList<QMetaObject> gameObjectTypes;
 };
 
 QList<QMetaObject> GameSessionPrivate::gameObjectTypes = {
-    BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, TankObject::staticMetaObject
+    BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, BuildingObject::staticMetaObject, TankObject::staticMetaObject, ThunderstormObject::staticMetaObject, ThunderstormObject::staticMetaObject, ThunderstormObject::staticMetaObject
 };
 
 GameSession::GameSession(QObject* parent) :
@@ -62,6 +68,10 @@ GameSession::GameSession(QObject* parent) :
     connect(d->speedTimer, &QTimer::timeout, this, [this] {
         d->speed *= 1.00005;
     });
+
+    d->fuel.load(QStringLiteral(":/fuel.svg"));
+    d->health.load(QStringLiteral(":/health.svg"));
+    d->healthLost.load(QStringLiteral(":/health-lost.svg"));
 }
 
 GameSession::~GameSession() {
@@ -98,10 +108,23 @@ void GameSession::drawScreen(QPainter* painter, QSize size) {
     painter->setOpacity(d->hudOpacity);
 
     // Draw the HUD
+    QRectF fuelIconRect;
+    fuelIconRect.setWidth(25);
+    fuelIconRect.setHeight(25);
+    fuelIconRect.moveTopLeft(playArea.topLeft() + QPoint(50, 50));
+
+    if (d->player->fuel() < 0.2) {
+        if ((static_cast<int>(d->x) / 50) % 2) {
+            d->fuel.render(painter, fuelIconRect);
+        }
+    } else {
+        d->fuel.render(painter, fuelIconRect);
+    }
+
     QRectF fuelRect;
     fuelRect.setWidth(300);
     fuelRect.setHeight(25);
-    fuelRect.moveTopLeft(playArea.topLeft() + QPoint(50, 50));
+    fuelRect.moveTopLeft(fuelIconRect.topRight() + QPoint(25, 0));
 
     QRectF filledFuelRect = fuelRect;
     filledFuelRect.setWidth(fuelRect.width() * qMax(0.0, d->player->fuel()));
@@ -117,9 +140,11 @@ void GameSession::drawScreen(QPainter* painter, QSize size) {
     health.moveTop(fuelRect.bottom() + 10);
 
     for (auto i = 1; i <= 5; i++) {
-        painter->setPen(Qt::red);
-        painter->setBrush(d->player->health() >= i ? Qt::red : Qt::transparent);
-        painter->drawEllipse(health);
+        if (d->player->health() >= i) {
+            d->health.render(painter, health);
+        } else {
+            d->healthLost.render(painter, health);
+        }
 
         health.moveLeft(health.right() + 10);
     }
@@ -172,6 +197,7 @@ void GameSession::genObjects() {
             connect(obj.data(), &GameObject::damage, d->player, &Player::damage);
             connect(obj.data(), &GameObject::heal, d->player, &Player::heal);
             connect(obj.data(), &GameObject::refuel, d->player, &Player::addFuel);
+            connect(obj.data(), &GameObject::stun, d->player, &Player::stun);
 
             d->gameObjects.append(obj);
             pushObject(obj->supplementaryObjects());
@@ -242,6 +268,11 @@ void GameSession::begin() {
 void GameSession::tick() {
     d->x += d->speed;
     d->player->tick(d->speed);
+
+    if (!d->gameObjects.isEmpty()) {
+        //Remove old game objects
+        if (d->gameObjects.first()->x() < d->x - 1000) d->gameObjects.takeFirst();
+    }
 
     d->player->setDrawDead(false);
     auto playerPosition = d->player->poly();

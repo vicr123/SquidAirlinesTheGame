@@ -25,6 +25,7 @@ class GameObject : public QObject {
         void refuel(double amount);
         void damage();
         void heal();
+        void stun(int time);
 
     private:
         GameObjectPrivate* d;

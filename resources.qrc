@@ -4,5 +4,6 @@
         <file>Overworld.mid</file>
         <file>fuel.svg</file>
         <file>health.svg</file>
+        <file>health-lost.svg</file>
     </qresource>
 </RCC>

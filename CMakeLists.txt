@@ -35,6 +35,7 @@ add_executable(SquidAirlinesTheGame WIN32 MACOSX_BUNDLE
         game/objects/fuelobject.h game/objects/fuelobject.cpp
         game/objects/tankobject.h game/objects/tankobject.cpp
         game/objects/healthobject.h game/objects/healthobject.cpp
+        game/objects/thunderstormobject.h game/objects/thunderstormobject.cpp
         game/audioengine.h game/audioengine.cpp
 
         Info.plist.in

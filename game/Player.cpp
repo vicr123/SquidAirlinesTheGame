@@ -25,6 +25,9 @@ struct PlayerPrivate {
 
     bool noFuel = false;
     double noFuelTarget = 200;
+
+    int stunned = 0;
+    double stunTarget = 200;
 };
 
 Player::Player(QRandomGenerator64* random, QObject* parent) :
@@ -47,7 +50,7 @@ void Player::draw(QPainter* painter) {
     QBrush brush;
     if (d->drawDead) {
         brush = Qt::red;
-    } else if (d->drawDamage > 0) {
+    } else if (d->drawDamage > 0 || d->stunned > 0) {
         brush = Qt::yellow;
     } else {
         brush = Qt::white;
@@ -72,7 +75,13 @@ QPolygonF Player::poly() {
 
 double Player::angle() {
     // -180 + whatever
-    auto distance = d->y - (d->noFuel ? d->noFuelTarget : d->target);
+    auto target = d->target;
+    if (d->noFuel) {
+        target = d->noFuelTarget;
+    } else if (d->stunned) {
+        target = d->stunTarget;
+    }
+    auto distance = d->y - target;
     auto angle = -180 + distance / 2;
     if (angle > -135) angle = -135;
     if (angle < -225) angle = -225;
@@ -102,15 +111,24 @@ void Player::heal() {
     d->health++;
 }
 
+void Player::stun(int time) {
+    if (d->stunned == 0) {
+        //Set up stun
+        d->stunTarget = d->target;
+    }
+    if (d->stunned < time) d->stunned = time;
+}
+
 void Player::tick(double xDistance) {
     // Move the aircraft
     QLineF flyLine(QPointF(50, d->y), QPointF(30, d->y));
     flyLine.setAngle(this->angle());
-    flyLine.setLength(xDistance);
+    flyLine.setLength(xDistance); 
     d->y = flyLine.pointAt(-1).y();
 
     if (d->drawDamage > 0) d->drawDamage--;
-
+    
+    if (d->stunned > 0) d->stunned--;
     if (d->gameStarted) d->fuel -= 0.0002;
     if (d->fuel > 1) d->fuel = 1;
     if (d->fuel < 0) {
