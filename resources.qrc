@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>IBMPlexSans-Regular.ttf</file>
+        <file>Overworld.mid</file>
     </qresource>
 </RCC>

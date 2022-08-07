@@ -6,6 +6,8 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+add_subdirectory(QMidi)
+
 find_package(Qt6 COMPONENTS
         Core
         Gui
@@ -29,6 +31,7 @@ add_executable(SquidAirlinesTheGame WIN32 MACOSX_BUNDLE
         game/objects/buildingobject.h game/objects/buildingobject.cpp
         game/objects/fuelobject.h game/objects/fuelobject.cpp
         game/objects/tankobject.h game/objects/tankobject.cpp
+        game/audioengine.h game/audioengine.cpp
 
         Info.plist.in
     )
@@ -39,7 +42,9 @@ target_link_libraries(SquidAirlinesTheGame
         Qt::Widgets
         Qt::OpenGL
         Qt::OpenGLWidgets
+        QMidi
         )
+    target_include_directories(SquidAirlinesTheGame PRIVATE ${CMAKE_SOURCE_DIR}/QMidi/src)
 
 set_target_properties(SquidAirlinesTheGame PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Info.plist.in

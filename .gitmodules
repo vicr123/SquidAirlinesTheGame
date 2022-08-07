@@ -1,0 +1,3 @@
+[submodule "QMidi"]
+	path = QMidi
+	url = https://github.com/waddlesplash/QMidi.git

@@ -8,20 +8,25 @@
 #include <QKeyEvent>
 #include <QPainter>
 #include <QTimer>
+#include "game/audioengine.h"
 
 struct MainWindowPrivate {
     QList<AbstractMenu*> menusToDraw;
+
+    AudioEngine* audio;
 
     QPointer<GameSession> session;
     MainMenu* mainMenu;
     bool playing = false;
 };
 
-MainWindow::MainWindow(QWidget *parent) : QOpenGLWidget(parent) {
+MainWindow::MainWindow(QWidget* parent) : QOpenGLWidget(parent) {
     d = new MainWindowPrivate();
     this->resize(1024, 768);
     this->setMouseTracking(true);
     this->setMinimumSize(1024, 768);
+
+    d->audio = new AudioEngine(this);
 
     auto surfaceFormat = this->format();
     surfaceFormat.setSamples(10);
@@ -40,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) : QOpenGLWidget(parent) {
     connect(d->mainMenu, &MainMenu::startGame, this, [this] {
         d->playing = true;
         d->session->begin();
+        d->audio->startGame();
     });
 }
 
@@ -47,7 +53,7 @@ MainWindow::~MainWindow() {
     delete d;
 }
 
-void MainWindow::paintEvent(QPaintEvent *e) {
+void MainWindow::paintEvent(QPaintEvent* e) {
     QOpenGLWidget::paintEvent(e);
 
     QLinearGradient sky(QPoint(0, this->height()), QPoint(0, 0));
@@ -66,7 +72,7 @@ void MainWindow::paintEvent(QPaintEvent *e) {
     }
 }
 
-void MainWindow::keyPressEvent(QKeyEvent *event) {
+void MainWindow::keyPressEvent(QKeyEvent* event) {
     QWidget::keyPressEvent(event);
 
     if (d->playing) {
@@ -106,6 +112,7 @@ void MainWindow::prepareNewGameSession() {
     connect(d->session, &GameSession::gameSessionEnded, this, [this] {
         d->playing = false;
         d->mainMenu->showAgain();
+        d->audio->endGame();
         this->prepareNewGameSession();
     });
 }
