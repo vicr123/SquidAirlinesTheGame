@@ -4,30 +4,36 @@
 
 #include "MainWindow.h"
 #include "game/GameSession.h"
+#include "game/audioengine.h"
 #include "menus/MainMenu.h"
 #include "menus/gameovermenu.h"
 #include "menus/pausemenu.h"
+#include <QIcon>
 #include <QKeyEvent>
 #include <QPainter>
+#include <QSvgRenderer>
 #include <QTimer>
-#include <QIcon>
-#include "game/audioengine.h"
+#include <QVariantAnimation>
 
 struct MainWindowPrivate {
-    QList<AbstractMenu*> menusToDraw;
+        QList<AbstractMenu*> menusToDraw;
 
-    AudioEngine* audio;
+        AudioEngine* audio;
 
-    QPointer<GameSession> session;
+        QPointer<GameSession> session;
 
-    MainMenu* mainMenu;
-    GameOverMenu* gameOverMenu;
-    PauseMenu* pauseMenu;
+        MainMenu* mainMenu;
+        GameOverMenu* gameOverMenu;
+        PauseMenu* pauseMenu;
 
-    bool playing = false;
+        bool playing = false;
+
+        QSvgRenderer publisherRenderer;
+        double publisherOpacity = 1;
 };
 
-MainWindow::MainWindow(QWidget* parent) : QOpenGLWidget(parent) {
+MainWindow::MainWindow(QWidget* parent) :
+    QOpenGLWidget(parent) {
     d = new MainWindowPrivate();
     this->resize(1024, 768);
     this->setMouseTracking(true);
@@ -35,7 +41,7 @@ MainWindow::MainWindow(QWidget* parent) : QOpenGLWidget(parent) {
 
     this->setWindowIcon(QIcon(":/app-icon.svg"));
 
-    d->audio = new AudioEngine(this);
+    d->publisherRenderer.load(QStringLiteral(":/entertaining-logo-wordmark-dark.svg"));
 
     auto surfaceFormat = this->format();
     surfaceFormat.setSamples(10);
@@ -46,7 +52,6 @@ MainWindow::MainWindow(QWidget* parent) : QOpenGLWidget(parent) {
     this->prepareNewGameSession();
 
     d->mainMenu = new MainMenu(this);
-    d->menusToDraw.append(d->mainMenu);
 
     connect(d->mainMenu, &MainMenu::requestPaint, this, [this] {
         this->update();
@@ -83,6 +88,25 @@ MainWindow::MainWindow(QWidget* parent) : QOpenGLWidget(parent) {
         d->audio->setState(AudioEngine::State::PreGame);
         this->prepareNewGameSession();
     });
+
+    QTimer::singleShot(3000, this, [this] {
+        QVariantAnimation* anim = new QVariantAnimation(this);
+        anim->setStartValue(1.0);
+        anim->setEndValue(0.0);
+        anim->setDuration(500);
+        anim->setEasingCurve(QEasingCurve::OutCubic);
+        connect(anim, &QVariantAnimation::valueChanged, this, [this](QVariant value) {
+            d->publisherOpacity = value.toDouble();
+            this->update();
+        });
+        connect(anim, &QVariantAnimation::finished, this, [this, anim] {
+            anim->deleteLater();
+            d->menusToDraw.append(d->mainMenu);
+
+            d->audio = new AudioEngine(this);
+        });
+        anim->start();
+    });
 }
 
 MainWindow::~MainWindow() {
@@ -92,24 +116,38 @@ MainWindow::~MainWindow() {
 void MainWindow::paintEvent(QPaintEvent* e) {
     QOpenGLWidget::paintEvent(e);
 
-    QLinearGradient sky(QPoint(0, this->height()), QPoint(0, 0));
-    sky.setColorAt(0, QColor(0, 200, 255));
-    sky.setColorAt(1, QColor(0, 100, 255));
+    if (d->publisherOpacity > 0) {
+        QPainter painter(this);
+        painter.fillRect(QRect(0, 0, this->width(), this->height()), Qt::black);
 
-    QPainter painter(this);
-    painter.fillRect(QRect(0, 0, this->width(), this->height()), sky);
+        painter.setOpacity(d->publisherOpacity);
 
-    if (d->session) {
-        d->session->drawScreen(&painter, QSize(this->width(), this->height()));
-    }
+        QRect publisherRect;
+        publisherRect.setSize(d->publisherRenderer.defaultSize());
+        publisherRect.moveCenter(QRect(0, 0, this->width(), this->height()).center());
+        d->publisherRenderer.render(&painter, publisherRect);
+    } else {
+        QLinearGradient sky(QPoint(0, this->height()), QPoint(0, 0));
+        sky.setColorAt(0, QColor(0, 200, 255));
+        sky.setColorAt(1, QColor(0, 100, 255));
 
-    for (auto menu : d->menusToDraw) {
-        menu->drawMenu(&painter, QSize(this->width(), this->height()));
+        QPainter painter(this);
+        painter.fillRect(QRect(0, 0, this->width(), this->height()), sky);
+
+        if (d->session) {
+            d->session->drawScreen(&painter, QSize(this->width(), this->height()));
+        }
+
+        for (auto menu : d->menusToDraw) {
+            menu->drawMenu(&painter, QSize(this->width(), this->height()));
+        }
     }
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event) {
     QWidget::keyPressEvent(event);
+
+    if (d->publisherOpacity > 0) return;
 
     if (d->playing) {
         d->session->keyPressEvent(event);
@@ -126,11 +164,13 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
             case Qt::Key_Return:
                 d->menusToDraw.last()->activate();
         }
-//        d->menusToDraw.last()->
+        //        d->menusToDraw.last()->
     }
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent* event) {
+    if (d->publisherOpacity > 0) return;
+
     if (d->playing) {
         d->session->mouseMoveEvent(event);
     }
